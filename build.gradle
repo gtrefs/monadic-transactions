@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'scala'
+}
+
+mainClassName = "de.gtrefs.transaction.Main"
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
+    compile group: 'org.jboss.weld.se', name: 'weld-se-core', version: '3.1.1.Final'
+    compile group: 'org.hsqldb', name: 'hsqldb', version: '2.3.2'
+    compile group: 'com.mysema.querydsl', name: 'querydsl-jpa', version: '2.0.7'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.28.2'
+
+    compile group: 'org.scala-lang', name: 'scala-library', version:'2.12.8'
+    testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: '3.0.3'
+}
+
