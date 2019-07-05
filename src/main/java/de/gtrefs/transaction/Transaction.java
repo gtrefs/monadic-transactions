@@ -52,4 +52,14 @@ public abstract class Transaction<T>{
     }
 
     abstract T run(EntityManager entityManager);
+
+    public <U> Transaction<U> flatten() {
+        return Transaction.of(em -> {
+            Object result = action.apply(em);
+            while(result instanceof Transaction){
+                result = ((Transaction) result).action.apply(em);
+            }
+            return (U) result;
+        });
+    }
 }

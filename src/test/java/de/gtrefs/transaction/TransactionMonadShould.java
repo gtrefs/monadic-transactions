@@ -1,6 +1,7 @@
 package de.gtrefs.transaction;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -50,6 +51,55 @@ public class TransactionMonadShould {
         assertThat(result, is("hello world"));
         verify(entityTransaction).begin();
         verify(entityTransaction).commit();
+    }
+
+    @Test
+    public void beAbleToFlattenTwoTransactionsIntoOne(){
+        Transaction<Transaction<String>> twoTransactions = Transaction.of(Transaction.of("hello"));
+
+        Transaction<String> flattened = twoTransactions.flatten();
+
+        assertThat(flattened.run(entityManager), is(twoTransactions.run(entityManager).run(entityManager)));
+    }
+
+    @Test
+    public void beAbleToFlattenMultipleTransactionsIntoOne(){
+        Transaction<Transaction<Transaction<String>>> threeTransactions = Transaction.of(Transaction.of(Transaction.of("hello")));
+
+        Transaction<String> flattened = threeTransactions.flatten();
+
+        assertThat(flattened.run(entityManager), is(threeTransactions.run(entityManager).run(entityManager).run(entityManager)));
+    }
+
+
+    @Test
+    public void callBeginAndCommitTransactionExactlyOnceWhenFlattened(){
+        Transaction<Transaction<Transaction<String>>> threeTransactions = Transaction.of(Transaction.of(Transaction.of("hello")));
+
+        Transaction<String> flattened = threeTransactions.flatten();
+        flattened.run(entityManager);
+
+        verify(entityTransaction).begin();
+        verify(entityTransaction).commit();
+    }
+
+    @Test
+    public void notFlattenATransactionWithoutNestedTransaction(){
+        Transaction<String> transaction = Transaction.of("hello");
+
+        Transaction<String> flattened = transaction.flatten();
+
+        assertThat(flattened.run(entityManager), is(transaction.run(entityManager)));
+    }
+
+    @Test
+    @Ignore("I could not find a way to express this in the type system. It fails at runtime.")
+    public void notBreakBecauseOfDifferentTypes(){
+        Transaction<String> transaction = Transaction.of("hello");
+
+        Transaction<Integer> flattened = transaction.flatten();
+
+        assertThat(flattened.run(entityManager), is(transaction.run(entityManager)));
     }
 
     @Test
